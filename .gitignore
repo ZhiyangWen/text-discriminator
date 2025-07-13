@@ -10,3 +10,4 @@ data/processed/
 
 # VSCode settings
 .vscode/
+.env
