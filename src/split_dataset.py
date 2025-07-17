@@ -14,11 +14,11 @@ def main():
     train, validation = train_test_split(
         train_and_validation,
         test_size=split_value,
-        stratify=df["label"],
+        stratify=train_and_validation["label"],
         random_state=42
     )
     os.makedirs("data/splits",exist_ok=True)
-    test.to_csv("dacta/splits/test.csv", index = False)
+    test.to_csv("data/splits/test.csv", index=False)
     train.to_csv("data/splits/train.csv", index=False)
     validation.to_csv("data/splits/validation.csv", index=False)
 
