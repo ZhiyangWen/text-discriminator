@@ -14,4 +14,6 @@ def read_extract(df:pd.DataFrame):
         stru = extract_structural(t)
         seq = extract_sequence(t)
         text_features.append([sty, stru, seq])
-    
+        X = np.stack(text_features)
+        Y = label
+        return X, Y

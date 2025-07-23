@@ -1,32 +1,35 @@
-import argparse #for implementing basic command line application
-import sys #for reading stdin
-import numpy
-from features.stylometry import extract_stylometry
-from features.structural import extract_structural
-from features.sequence import extract_sequence
+import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report
+import joblib
+import os
+from extract_feature import read_extract
 
 print("is running")
 
 def main():
-    parser = argparse.ArgumentParser(description="Extract three stream feature")
-    parser.add_argument("input", help= "read the text or when '-' read the input from user")
-    args = parser.parse_args()
-    if args.input == "-":
-        text = sys.stdin.read()
+    train_df = pd.read_csv("data/splits/train.csv")
+    validation_df = pd.read_csv("data/splits/validation.csv")
+    test_df = pd.read_csv("data/splits/test.csv")
 
-    else:
-        with open(args.input,"r", encoding="utf-8") as f:
-            text = f.read()
-    styl = extract_stylometry(text)
-    struc = extract_structural(text)
-    seq = extract_sequence(text)
-    print("stylometry:", styl.tolist())
-    print("structural:", struc.tolist())
-    print("sequence:", seq.tolist())
-    whole = numpy.concatenate([
-        styl,struc,seq
-    ])
-    print("whole:", whole.tolist())
+    X_train, y_train = read_extract(train_df)
+    X_validation, y_validation = read_extract(validation_df)
+    X_test, y_test = read_extract(test_df)
+
+    clf =  RandomForestClassifier(n_estimators=100, random_state=42) #create model, can only train on numeric features
+    clf.fit(X_train, y_train) #train the model, the model learns pattern
+
+    print("Validation Results")
+    y_val_predict = clf.predict(X_validation)
+    print(classification_report(y_validation, y_val_predict, digits=4))
+
+    print("Test Results")
+    y_test_predict = clf.predict(X_test) #use the model to make predictions
+    print(classification_report(y_test, y_test_predict, digits=4)) #summarize the overall outcome
+
+    os.makedirs("models", exist_ok=True)
+    joblib.dump(clf, "models/rf_discriminator.joblib")
+    print("Saved model to models/rf_discriminator.joblib")
 
 if __name__ == "__main__":
     main()
