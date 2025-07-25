@@ -23,20 +23,21 @@ def _local_diff2(probs: list[float]) -> float:
 def _compute_uid_surp(text: str):
     corpus = _TOKENIZER.eos_token + text
     enc = _TOKENIZER(corpus, return_tensors="pt", padding=False)
-    input_ids = enc.input_ids[0].to(_DEVICE)
-    mask      = enc.attention_mask[0].to(_DEVICE)
+    input_ids = enc.input_ids.to(_DEVICE)
+    mask      = enc.attention_mask.to(_DEVICE)
 
     with torch.no_grad():
         outputs = _MODEL(input_ids=input_ids, attention_mask=mask, labels=input_ids)
         logits  = outputs.logits
 
-    seq_len    = mask.sum().item()
+    seq_len    = mask[0].sum().item()
+    token_logits = logits[0]
     surprisals = []
     total      = 0.0
 
     for i in range(seq_len - 1):
-        probs = F.softmax(logits[i], dim=-1)
-        tokid = input_ids[i+1]
+        probs = F.softmax(token_logits[i], dim=-1)
+        tokid = input_ids[0, i+1].item()
         s     = -torch.log(probs[tokid]).item()
         surprisals.append(s)
         total += s
