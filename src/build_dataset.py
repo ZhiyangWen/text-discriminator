@@ -28,7 +28,7 @@ def main():
 
     
     full = load_dataset("knkarthick/samsum")["train"]
-    dataset = full.select(range(1000)) 
+    dataset = full.select(range(3000)) 
     human_sum = [ds["summary"] for ds in dataset] 
 
     ai_sum = []
